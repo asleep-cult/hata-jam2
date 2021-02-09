@@ -24,6 +24,14 @@ KISS_IMAGES = (
     'https://media1.tenor.com/images/2d195925d2b671205a47d398b4e1395a/tenor.gif?itemid=18954799' # noqa
 )
 
+CAT_BOYS = (
+    'https://media1.tenor.com/images/e82ea2acdaff05417b2b28daf95aa966/tenor.gif?itemid=19423064', # noqa
+    'https://media1.tenor.com/images/f6cd310cff3a86b64a548bed86575468/tenor.gif?itemid=14321810', # noqa
+    'https://media1.tenor.com/images/3d05c293d0df5f165c6c0e891e9a0457/tenor.gif?itemid=20199733', # noqa
+    'https://media1.tenor.com/images/96a458e8575b4dd1118aea645f9cb1cb/tenor.gif?itemid=16181878', # noqa
+    'https://media1.tenor.com/images/542339c921a93e717373784c59935bb5/tenor.gif?itemid=19202127', # noqa
+)
+
 
 @fembot.interactions(guild=constants.DUNGEON) # noqa
 async def gayness(
@@ -42,16 +50,16 @@ async def gayness(
             'Hmm I don\'t remember them ' \
             'so i\'ve decided to do a re-evaluation'
     else:
-        title = 'DADDY'
+        title = 'OwO'
 
     if gay < 69:
-        color = 0xeb4034
+        color = constants.RED
         description = \
             'I hate them entirely, heterosexuality is a sin... ' \
             'but I still support them :man_shrugging:\n' \
             f':rainbow_flag: Gayness Level: **{gay}**% :rainbow_flag:'
     else:
-        color = 0x34eb6b
+        color = constants.GREEN
         description = \
             'Looking like a homosexual king to me\n' \
             f':rainbow_flag: Gayness Level: **{gay}**% :rainbow_flag:'
@@ -74,8 +82,22 @@ async def kiss(
     embed = discord.Embed(
         title=':rainbow_flag: This is so gay... I love it :rainbow_flag:',
         description=f'{event.user:f} kisses {user:f}',
-        color=0x34eb6b
+        color=constants.RED
     )
     image = random.choice(KISS_IMAGES)
+    embed.add_image(image)
+    return embed
+
+
+@fembot.interactions(guild=constants.DUNGEON) # noqa
+async def catboy(client, event):
+    """
+    Send's an image of a cute catboy
+    """
+    embed = discord.Embed(
+        title='Here\'s a cute catboy',
+        color=constants.GREEN
+    )
+    image = random.choice(CAT_BOYS)
     embed.add_image(image)
     return embed

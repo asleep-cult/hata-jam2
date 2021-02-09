@@ -1,3 +1,3 @@
 from fembot.bot import fembot
 
-fembot.start()
+fembot.client.start()
