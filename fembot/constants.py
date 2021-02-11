@@ -36,5 +36,6 @@ CAT_BOYS = (
     'https://media1.tenor.com/images/542339c921a93e717373784c59935bb5/tenor.gif?itemid=19202127',
 )
 
+
 with open('fembot/setup.json') as fp:
     SETUP = json.load(fp)

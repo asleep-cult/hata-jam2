@@ -1,4 +1,3 @@
-import itertools
 from dateutil import relativedelta
 from hata import discord
 from datetime import datetime
@@ -144,7 +143,7 @@ async def leaderboard(client, event):
 
         user = discord.User.precreate(catboy[0])
         description.append(
-            f'**{user:f}**\n**Points**: {catboy[1]}'
+            f'**{user:f}**\n**Catboy Points**: {catboy[1]}'
         )
 
     embed.description = '\n'.join(
@@ -196,5 +195,6 @@ async def gift(
     return discord.Embed(
         f'{event.user:f} gifted {user:f} {amount} catboy points',
         f'**{event.user:f}** {author_catboy[1]} -> {author_catboy[1] - amount}\n'
-        f'**{user:f}** {user_catboy[1]} -> {user_catboy[1] + amount}'
+        f'**{user:f}** {user_catboy[1]} -> {user_catboy[1] + amount}',
+        constants.GREEN
     )
