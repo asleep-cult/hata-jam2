@@ -13,17 +13,18 @@ class Fembot:
         setup_ext_slash(self.client)
 
     async def create_db(self):
-        self.db_conn = await sql.connect('fembot/database/database.db')
-        await self.db_conn.execute(
+        self.db = await sql.connect('fembot/database/database.db')
+        await self.db.execute(
             'CREATE TABLE IF NOT EXISTS catboys ('
-            'user_id INTEGER, catboy_points INTEGER'
+            'user_id INTEGER, catboy_points INTEGER, '
             'last_claimed TEXT'
             ')'
         )
 
+
 fembot = Fembot()
 
-EXTENSION_LOADER.add_default_variables(fembot=fembot.client)
+EXTENSION_LOADER.add_default_variables(fembot=fembot)
 
 for name in os.listdir('fembot/extensions'):
     if name.endswith('.py'):
