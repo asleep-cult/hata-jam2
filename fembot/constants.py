@@ -1,4 +1,5 @@
 import json
+from datetime import timedelta
 from hata import discord
 
 SLEEP = discord.User.precreate(385575610006765579)
@@ -8,6 +9,9 @@ TESTING = discord.Guild.precreate(729426764652347486)
 
 GREEN = 0x34eb6b
 RED = 0xeb4034
+
+DAILY_WINDOW = timedelta(days=1)
+DAILY_INCREMENT = 100
 
 KISS_IMAGES = (
     'https://media1.tenor.com/images/bb91ac9f2169548bbae300ecd21f4e77/tenor.gif?itemid=19762150',

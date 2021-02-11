@@ -1,11 +1,8 @@
+import itertools
 from dateutil import relativedelta
 from hata import discord
-from datetime import datetime, timedelta
+from datetime import datetime
 from .. import constants
-
-
-DAILY_WINDOW = timedelta(days=1)
-DAILY_INCREMENT = 100
 
 
 async def get_catboy(user_id):
@@ -20,18 +17,37 @@ async def create_catboy(user_id):
         'INSERT INTO catboys (user_id, catboy_points, last_claimed) ' \
         'VALUES (?, ?, ?)'
     now = datetime.now().isoformat()
-    cursor = await fembot.db.execute(sql, (user_id, DAILY_INCREMENT, now))
+    cursor = await fembot.db.execute(
+        sql,
+        (user_id, constants.DAILY_INCREMENT, now)
+    )
     await fembot.db.commit()
     return cursor
 
 
-async def increment_catboy(user_id):
+async def increment_catboy(user_id, amount):
     sql = \
         'UPDATE catboys SET ' \
-        f'catboy_points = catboy_points + {DAILY_INCREMENT}, ' \
+        'catboy_points = catboy_points + ?, ' \
         'last_claimed = ? WHERE user_id = ?'
     now = datetime.now().isoformat()
-    cursor = await fembot.db.execute(sql, (now, user_id))
+    cursor = await fembot.db.execute(
+        sql,
+        (amount, now, user_id)
+    )
+    await fembot.db.commit()
+    return cursor
+
+
+async def decrement_catboy(user_id, amount):
+    sql = \
+        'UPDATE catboys SET ' \
+        'catboy_points = catboy_points - ? ' \
+        'WHERE user_id = ?'
+    cursor = await fembot.db.execute(
+        sql,
+        (amount, user_id)
+    )
     await fembot.db.commit()
     return cursor
 
@@ -45,10 +61,10 @@ async def daily(client, event):
 
     if catboy is None:
         await create_catboy(event.user.id)
-        points = DAILY_INCREMENT
+        points = constants.DAILY_INCREMENT
     else:
         time = datetime.fromisoformat(catboy[2])
-        window = time + DAILY_WINDOW
+        window = time + constants.DAILY_WINDOW
         now = datetime.now()
 
         if window > now:
@@ -74,8 +90,8 @@ async def daily(client, event):
                 f'Try again in {time}',
                 constants.RED
             )
-        await increment_catboy(event.user.id)
-        points = catboy[1] + DAILY_INCREMENT
+        await increment_catboy(event.user.id, constants.DAILY_INCREMENT)
+        points = catboy[1] + constants.DAILY_INCREMENT
 
     return discord.Embed(
         'Noice.',
@@ -120,13 +136,65 @@ async def leaderboard(client, event):
     embed = discord.Embed(title='OwO', color=constants.GREEN)
     description = []
 
-    for i in range(cursor.arraysize):
+    while True:
         catboy = await cursor.fetchone()
+
+        if catboy is None:
+            break
+
         user = discord.User.precreate(catboy[0])
         description.append(
-            f'#{i + 1}: **{user:f}**\n**Points**: {catboy[1]}'
+            f'**{user:f}**\n**Points**: {catboy[1]}'
         )
 
-    embed.description = '\n'.join(description)
+    embed.description = '\n'.join(
+        f'#{i}: {v}' for i, v in enumerate(reversed(description), start=1)
+    )
 
     return embed
+
+
+@fembot.client.interactions(guild=constants.DUNGEON)
+async def gift(
+    client,
+    event,
+    user: ('user', 'The user you want to gift to'),
+    amount: ('int', 'The amount you want to gift')
+):
+    """
+    Give a user some of your catboy points
+    """
+    if amount < 0:
+        return discord.Embed(
+            'Nop.',
+            'Stop trying to break me cutie',
+            constants.RED
+        )
+
+    author_catboy = await get_catboy(event.user.id)
+
+    if author_catboy is None:
+        await create_catboy(event.user.id)
+        author_catboy = (event.user.id, constants.DAILY_INCREMENT)
+
+    if author_catboy[1] < amount:
+        return discord.Embed(
+            'Nop.',
+            'You don\'t have enough points for that :(',
+            constants.RED
+        )
+
+    user_catboy = await get_catboy(user.id)
+
+    if user_catboy is None:
+        await create_catboy(user.id)
+        user_catboy = (user.id, constants.DAILY_INCREMENT)
+
+    await increment_catboy(user.id, amount)
+    await decrement_catboy(event.user.id, amount)
+
+    return discord.Embed(
+        f'{event.user:f} gifted {user:f} {amount} catboy points',
+        f'**{event.user:f}** {author_catboy[1]} -> {author_catboy[1] - amount}\n'
+        f'**{user:f}** {user_catboy[1]} -> {user_catboy[1] + amount}'
+    )
